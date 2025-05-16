@@ -50,21 +50,20 @@ class AnalyzeComplex:
         retrieve dataset from machine learning
         '''
         ds_data = []
-        for _data in self.data:
-            rec = {}
-            for key, seq_rec in _data.items():
-                seq_list = [i['seq'] for i in seq_rec if \
-                    len(i['seq']) >= min_fragment]
-                # take antigen or receptor as input
-                if key == 'receptor':
-                    rec['input'] = ' | '.join(seq_list)
-                    rec['input_label'] = key
-                else:
-                    # take heavy or light chain or single domain 
-                    #  chain of antibody as output
-                    rec['output'] = ' | '.join(seq_list)
-                    rec['output_label'] = key
+        for antibody_name, antibody_rec, receptor_name, receptor_rec in self.data:
+            
+            antibody_seq_list = [i['seq'] for i in antibody_rec if \
+                len(i['seq']) >= min_fragment]
+            receptor_seq_list = [i['seq'] for i in receptor_rec if \
+                len(i['seq']) >= min_fragment]
             # both input and output are existing
-            if rec['input'] and rec['output']:
+            if antibody_seq_list and receptor_seq_list:
+                # take antigen as input
+                rec = {
+                    'input': ' | '.join(receptor_seq_list),
+                    'input_label': receptor_name,
+                    'output': ' | '.join(antibody_seq_list),
+                    'output_label': antibody_name,
+                }
                 ds_data.append(rec)
         return ds_data

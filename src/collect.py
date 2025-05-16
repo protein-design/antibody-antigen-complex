@@ -4,27 +4,39 @@ import numpy as np
 import pandas as pd
 import os
 import json
+import re
 import pickle
 import requests
 
-from dir import Dir
-from utils import Utils
-from analyze_dist import AnalyzeDist
-from analyze_sasa import AnalyzeSasa
+from src.dir import Dir
+from src.utils import Utils
+from src.analyze_dist import AnalyzeDist
+from src.analyze_sasa import AnalyzeSasa
 
 class Collect:
-    def __init__(self, outputs_dir:str, type_name:str=None, chain_len:int=None):
-        self.outputs_dir = outputs_dir
+    def __init__(self, dir:str, type_name:str=None, chain_len:int=None):
+        self._dir = dir
         self.type_name = type_name
         self.chain_len = chain_len
 
+    def get_raw_pdb(self):
+        for path in Dir(self._dir).recrusive_files():
+            if path.endswith('ent.gz'):
+                pdb_id = os.path.basename(path)
+                pdb_id = re.sub(r'^pdb|.ent.gz$', '', pdb_id).upper()
+                yield pdb_id, path
+    
+    def filter_raw_pdb(self, pdb_ids:list):
+        for pdb_id, path in self.get_raw_pdb():
+            if pdb_id in pdb_ids:
+                yield pdb_id, path
+
     def meta(self):
-        file_iter = Dir(self.outputs_dir).recrusive_files()
+        file_iter = Dir(self._dir).recrusive_files()
         for path in file_iter:
             if path.endswith('meta.json'):
                 with open(path, 'r') as f:
                     data = json.load(f)
-                    # print(data)
                     meta = []
                     for rec in data['chains']:
                         df = pd.DataFrame(rec['chains'])
@@ -38,7 +50,7 @@ class Collect:
 
     def pair_sasa(self):
         names, antibody_sasa, antigen_sasa = [], [], []
-        _iter = Utils.iter_files(self.outputs_dir, 'freesasa.p')
+        _iter = Utils.iter_files(self._dir, 'freesasa.p')
         for pdb_id, pfile in _iter:
             p = AnalyzeSasa(pfile)
             sasa = p.get_chain_data(self.type_name, self.chain_len)
@@ -59,7 +71,7 @@ class Collect:
 
     def pair_dist(self):
         names, antibody_dist, antigen_dist = [], [], []
-        _iter = Utils.iter_files(self.outputs_dir, 'dist.p')
+        _iter = Utils.iter_files(self._dir, 'dist.p')
         for pdb_id, pfile in _iter:
             p = AnalyzeDist(pfile)
             dist = p.get_chain_data(self.type_name, self.chain_len)
@@ -82,7 +94,7 @@ class Collect:
 
     def receptor_sasa(self):
         names, antigen = [], []
-        _iter = Utils.iter_files(self.outputs_dir, 'freesasa.p')
+        _iter = Utils.iter_files(self._dir, 'freesasa.p')
         for pdb_id, pfile in _iter:
             p = AnalyzeSasa(pfile)
             sasa = p.get_receptor_data()
@@ -98,7 +110,7 @@ class Collect:
 
     def receptor_dist(self):
         names, antigen = [], []
-        _iter = Utils.iter_files(self.outputs_dir, 'dist.p')
+        _iter = Utils.iter_files(self._dir, 'dist.p')
         for pdb_id, pfile in _iter:
             p = AnalyzeDist(pfile)
             dist = p.get_receptor_data()

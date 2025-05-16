@@ -5,6 +5,7 @@ process PDB
 import gzip
 import json
 import os
+import re
 from pprint import pprint
 from Bio.PDB import PDBIO, PDBParser, MMCIFParser, Select
 from Bio.Seq import Seq
@@ -16,11 +17,11 @@ import warnings
 from Bio.PDB.PDBExceptions import PDBConstructionWarning
 warnings.simplefilter("ignore", PDBConstructionWarning)
 
-from dir import Dir
-from amino_acids import longer_names
-from chain_atom_select import ChainAtomSelect
-from utils import Utils
-from download import Download
+from src.dir import Dir
+from src.amino_acids import longer_names
+from src.atom_select import ChainAtomSelect, LigandAtomSelect, AllAtomSelect
+from src.utils import Utils
+from src.download import Download
 
 class NonHetSelect(Select):
     """Select only ATOM records (exclude HETATM)"""
@@ -29,11 +30,12 @@ class NonHetSelect(Select):
 
 class ProcessPdb:
 
-    def __init__(self, infile:str, outdir:str=None):
+    def __init__(self, infile:str, outdir:str=None, verbose:bool=True):
         # pdb_file
         self.pdb_file = infile
         self.indir = os.path.dirname(infile)
         self.pdb_file_name = os.path.basename(infile)
+        self.verbose = verbose
         # default objects should be updated
         self.annot = {}
         self.info = []
@@ -43,6 +45,47 @@ class ProcessPdb:
         self.get_parser()
         self.load_structure()
         self.init_outdir(outdir)
+
+
+    def split_by_chain(self, chain_ids:list, file_name:str=None):
+        """
+            Save chain while preserving original header information
+        """
+        # Copy header from original file
+        header_lines = []
+        if self.pdb_file.endswith('.gz'):
+            with gzip.open(self.pdb_file, 'rt') as f:
+                for line in f:
+                    if line.startswith(("HEADER", "TITLE", "COMPND", "SOURCE")):
+                        header_lines.append(line)
+        else:
+            with open(self.pdb_file, 'r') as f:
+                for line in f:
+                    if line.startswith(("HEADER", "TITLE", "COMPND", "SOURCE")):
+                        header_lines.append(line)
+
+        # Write output with header
+        io = PDBIO()
+        io.set_structure(self.structure)
+
+        # selector
+        _ids = ''.join(chain_ids)
+        atom_selector = ChainAtomSelect
+        if '-' in _ids:
+            atom_selector = LigandAtomSelect
+        elif '+' in _ids:
+            atom_selector = AllAtomSelect
+        print(atom_selector)
+        # save
+        chain_ids = [re.sub(r'\-|\+', '', i) for i in chain_ids]
+        file_name = '_'.join(chain_ids) if file_name is None else file_name
+        outname = f"{self.structure_id}_{file_name}.pdb"
+        outfile = os.path.join(self.outdir, outname)
+        with open(outfile, "w") as f:
+            f.writelines(header_lines)
+            io.save(f, atom_selector(chain_ids))
+        print(f"Saved chain {chain_ids} to {outfile}")
+        return outfile
 
     def get_parser(self):
         '''
@@ -65,12 +108,19 @@ class ProcessPdb:
         if self.parser:
             if self.pdb_file.endswith('.gz'):
                 with gzip.open(self.pdb_file, 'rt') as gzf:
-                    self.structure = self.parser.get_structure(self.pdb_file_name, gzf)
+                    self.structure = self.parser.get_structure(
+                        self.pdb_file_name,
+                        gzf
+                    )
             else:
-                self.structure = self.parser.get_structure(self.pdb_file_name, self.pdb_file)
+                self.structure = self.parser.get_structure(
+                    self.pdb_file_name,
+                    self.pdb_file
+                )
             if self.structure:
                 self.structure_id = self.structure.header.get('idcode', '').upper()
-                print(f"Successfully retrieve structure of {self.structure_id}")
+                if self.verbose:
+                    print(f"Successfully retrieve structure of {self.structure_id}")
 
     def init_outdir(self, outdir=None):
         if outdir:
@@ -78,7 +128,8 @@ class ProcessPdb:
             prefix = self.structure_id[:2]
             self.outdir = os.path.join(outdir, prefix, self.structure_id)
             Dir(self.outdir).init_dir()
-            print('outputs dir: ', self.outdir)
+            if self.verbose:
+                print('outputs dir: ', self.outdir)
 
     def get_header(self):
         header = {
@@ -114,24 +165,15 @@ class ProcessPdb:
             self.chains.append(_chains)
         return self.chains
 
-    def update_chains(self, new_key:str, info:dict=None):
-        '''
-        integrate pairwise chains from self.info  to self.chains
-        '''
-        if info is None:
-            info = self.info
-        for rec in info:
-            for chain_id, val in rec.items():
-                for _model in self.chains:
-                    for _chain in _model['chains']:
-                        if _chain['chain_id'] == chain_id:
-                            _chain[new_key] = val
-    
+   
     def save_annot(self):
         '''
         1. self.chains
         2. mapping of pdb - uniprot
         '''
+        # resolution
+        self.annot['resolution'] = self.structure.header.get('resolution')
+            
         # integrate chains
         if self.chains:
             self.annot['chains'] = self.chains
@@ -275,33 +317,5 @@ class ProcessPdb:
         with open(outfile, 'w') as f:
             SeqIO.write(records, f, 'fasta')
 
-    def split_by_chain(self, chain_ids:list):
-        """
-            Save chain while preserving original header information
-        """
-        # Copy header from original file
-        header_lines = []
-        if self.pdb_file.endswith('.gz'):
-            with gzip.open(self.pdb_file, 'rt') as f:
-                for line in f:
-                    if line.startswith(("HEADER", "TITLE", "COMPND", "SOURCE")):
-                        header_lines.append(line)
-        else:
-            with open(self.pdb_file, 'r') as f:
-                for line in f:
-                    if line.startswith(("HEADER", "TITLE", "COMPND", "SOURCE")):
-                        header_lines.append(line)
-
-        # Write output with header
-        io = PDBIO()
-        io.set_structure(self.structure)
-        
-        outname = '_'.join([self.structure_id] + chain_ids) + '.pdb'
-        outfile = os.path.join(self.outdir, outname)
-        with open(outfile, "w") as f:
-            f.writelines(header_lines)
-            io.save(f, ChainAtomSelect(chain_ids))
-        print(f"Saved chain {chain_ids} to {outfile}")
-        return outfile
 
 

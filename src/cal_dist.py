@@ -9,8 +9,8 @@ import subprocess
 import MDAnalysis as mda
 from MDAnalysis.analysis.distances import distance_array
 
-from process_pdb import ProcessPdb
-from amino_acids import EXTRA_LONGER_NAMES
+from src.process_pdb import ProcessPdb
+from src.amino_acids import EXTRA_LONGER_NAMES
 
 class CalDist:
 
@@ -31,8 +31,12 @@ class CalDist:
         '''
         '''
         # Select chains
-        chain1 = self.u.select_atoms(f"chainID {chain1_id}")
-        chain2 = self.u.select_atoms(f"chainID {chain2_id}")
+        cond1 = "record_type hetatm" if chain1_id[-1] == '-' \
+            else f"chainID {chain1_id}"
+        chain1 = self.u.select_atoms(cond1)
+        cond2 = "record_type hetatm" if chain2_id[-1] == '-' \
+            else f"chainID {chain2_id}"
+        chain2 = self.u.select_atoms(cond2)
 
         # Get the coordinates
         coords1 = chain1.positions
@@ -40,6 +44,8 @@ class CalDist:
         # print(len(coords1), len(coords2))
         # Calculate the distances between each pair of atoms
         dists = distance_array(coords1, coords2)
+        if not dists:
+            return None, None
 
         # value is minimum distance
         df1 = pd.DataFrame({

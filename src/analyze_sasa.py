@@ -4,7 +4,7 @@ import os
 import re
 import pickle
 
-from analyze_complex import AnalyzeComplex
+from src.analyze_complex import AnalyzeComplex
 
 class AnalyzeSasa(AnalyzeComplex):
     def __init__(self, pickle_file, delta_threshold:float=None, \
@@ -43,10 +43,7 @@ class AnalyzeSasa(AnalyzeComplex):
             # seq
             motif1 = self.parse_seq(delta1)
             motif2 = self.parse_seq(delta2)
-            pairs.append({
-                k1: motif1,
-                k2: motif2,
-            })
+            pairs.append((k1, motif1, k2, motif2))
         # export
         cond = f"delta-{self.delta_threshold}_span-{self.max_span}"
         outfile = os.path.join(self.outdir, f'seq_sasa_{cond}.p')

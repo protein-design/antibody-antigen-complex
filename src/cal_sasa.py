@@ -5,22 +5,89 @@ SASA solvent accessible surface area
 import os
 import numpy as np
 import pandas as pd
+import re
 import subprocess
 
 import freesasa
 from Bio.PDB.SASA import ShrakeRupley
 
-from process_pdb import ProcessPdb
-from amino_acids import EXTRA_LONGER_NAMES
+from src.process_pdb import ProcessPdb
+from src.amino_acids import EXTRA_LONGER_NAMES
+
 class CalSasa:
 
-    def __init__(self, pdb_file:str, prob_radious:float=None):
+    def __init__(self, pdb_file:str, chain_ids:str=None, prob_radious:float=None):
         self.pdb_file = pdb_file
         self.pdb_dir = os.path.dirname(pdb_file)
         self.pdb_name = os.path.splitext(os.path.basename(pdb_file))[0]
+        self.chain_ids = chain_ids
         self.prob_radious = 1.4 if prob_radious is None else prob_radious
         # updated by self.cal_freesasa()
         self.df = None
+    
+    def cal_freesasa(self, method=None):
+        try:
+            hetatm = True if re.findall(r'\-|\+', self.chain_ids) else False
+            print(self.chain_ids, hetatm)
+            structure = freesasa.Structure(
+                self.pdb_file,
+                options = {'hetatm': hetatm,}
+            )
+            method = freesasa.LeeRichards if method == 'L' \
+                else freesasa.ShrakeRupley
+            calc_args = freesasa.Parameters({
+                'algorithm': method,
+                'probe-radius': self.prob_radious,
+                'n-slices': 100,
+            })
+            result = freesasa.calc(structure)
+        except Exception as e:
+            print(e)
+            return None
+
+        sasa = []
+        res_areas = result.residueAreas()
+        for chain_id, chain_sasa in res_areas.items():
+            for res_area in chain_sasa.values():
+                _sasa = {
+                    'chain_id': chain_id,
+                    'res_no': res_area.residueNumber,
+                    'res': res_area.residueType,
+                    'total': res_area.total,
+                    'relative_total': res_area.relativeTotal,
+                    'apolar': res_area.apolar,
+                    'relative_apolar': res_area.relativeApolar,
+                    'polar': res_area.polar,
+                    'relative_polar': res_area.relativePolar,
+                    'side_chain': res_area.sideChain,
+                    'relative_side_chain': res_area.relativeSideChain,
+                    'main_chain': res_area.mainChain,
+                    'relative_main_chain': res_area.relativeMainChain,
+                }
+                _sasa['aa'] = EXTRA_LONGER_NAMES.get(_sasa['res'], '')
+                sasa.append(_sasa)
+        self.df = pd.DataFrame(sasa)
+        self.df = self.df.set_index(['chain_id', 'res_no'])
+        return self.df
+
+    @staticmethod
+    def cal_delta_sasa(bounded_df, unbounded_df):
+        '''
+        calculate delta SASA
+        '''
+        matched = bounded_df.index.intersection(unbounded_df.index)
+        delta = bounded_df.loc[matched, ['res', 'aa']]
+        delta['value'] = unbounded_df.loc[matched, 'total'] - bounded_df.loc[matched, 'total']
+        delta = delta.reset_index()
+
+        # check if tight connection between two chains
+        #  at least tightly connected 3 residues
+        sig = delta[delta['value'] > 0]
+        if len(sig) >= 3:
+            return delta
+        if len(sig) > 0:
+            print(sig)
+        return None
 
     def cal_total_sasa(self) -> dict:
         """
@@ -95,57 +162,3 @@ class CalSasa:
         cmd = ['freesasa', self.pdb_file, f"--output={outfile}",\
             '--format=seq', f'-p {self.prob_radious}', method]
         subprocess.call(cmd)
-    
-    def cal_freesasa(self, method=None):
-        method = freesasa.LeeRichards if method == 'L' \
-            else freesasa.ShrakeRupley
-        structure = freesasa.Structure(self.pdb_file)
-        calc_args = freesasa.Parameters({
-            'algorithm': method,
-            'probe-radius': self.prob_radious,
-            'n-slices': 100,
-        })
-        result = freesasa.calc(structure, calc_args)
-
-        sasa = []
-        res_areas = result.residueAreas()
-        for chain_id, chain_sasa in res_areas.items():
-            for res_area in chain_sasa.values():
-                _sasa = {
-                    'chain_id': chain_id,
-                    'res_no': res_area.residueNumber,
-                    'res': res_area.residueType,
-                    'total': res_area.total,
-                    'relative_total': res_area.relativeTotal,
-                    'apolar': res_area.apolar,
-                    'relative_apolar': res_area.relativeApolar,
-                    'polar': res_area.polar,
-                    'relative_polar': res_area.relativePolar,
-                    'side_chain': res_area.sideChain,
-                    'relative_side_chain': res_area.relativeSideChain,
-                    'main_chain': res_area.mainChain,
-                    'relative_main_chain': res_area.relativeMainChain,
-                }
-                _sasa['aa'] = EXTRA_LONGER_NAMES.get(_sasa['res'], '')
-                sasa.append(_sasa)
-        self.df = pd.DataFrame(sasa)
-        self.df = self.df.set_index(['chain_id', 'res_no'])
-        return self.df
-
-    def cal_delta_sasa(self, unbounded_df):
-        '''
-        calculate delta SASA
-        '''
-        matched = self.df.index.intersection(unbounded_df.index)
-        delta = self.df.loc[matched, ['res', 'aa']]
-        delta['value'] = unbounded_df.loc[matched, 'total'] - self.df.loc[matched, 'total']
-        delta = delta.reset_index()
-
-        # check if tight connection between two chains
-        #  at least tightly connected 3 residues
-        sig = delta[delta['value'] > 0]
-        if len(sig) >= 3:
-            return delta
-        if len(sig) > 0:
-            print(sig)
-        return None

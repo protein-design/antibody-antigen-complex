@@ -4,7 +4,7 @@ import os
 import re
 import pickle
 
-from analyze_complex import AnalyzeComplex
+from src.analyze_complex import AnalyzeComplex
 
 class AnalyzeDist(AnalyzeComplex):
     def __init__(self, pickle_file, max_span:int=None, \
@@ -37,10 +37,7 @@ class AnalyzeDist(AnalyzeComplex):
             motif1 = self.parse_seq(dist1)
             motif2 = self.parse_seq(dist2)
             if motif1 and motif2:
-                pairs.append({
-                    k1: motif1,
-                    k2: motif2,
-                })
+                pairs.append((k1, motif1, k2, motif2))
         # export
         cond = f"dist-{self.cutoff}_span-{self.max_span}"
         outfile = os.path.join(self.outdir, f'seq_dist_{cond}.p')
