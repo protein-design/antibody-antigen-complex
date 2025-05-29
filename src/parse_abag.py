@@ -16,11 +16,25 @@ from src.parse_header import ParseHeader
 
 class ParseAbAg(ProcessPdb):
 
-    def __init__(self, pdb_file, outdir=None, verbose:bool=True):
-        super().__init__(pdb_file, outdir, verbose)
+    def __init__(self, args:dict):
+        super().__init__(args)
         self.bounded = []
         self.complex = {}
     
+    def parse_antibody_antigen(self):
+        '''
+        update self.info and self.bounded
+        '''
+        self.complex = {
+            'pdb_id': self.structure_id,
+            'resolution': self.structure.header['resolution'],
+            'release_date': self.structure.header['release_date'],
+        }
+        self.detect_heavy_light()
+
+        self.init_outdir(outdir)
+        return self.info
+
     def filter_antibody_antigen(self, outdir:str=None):
         '''
         update self.info

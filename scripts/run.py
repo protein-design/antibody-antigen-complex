@@ -13,18 +13,20 @@ from src.parse_abag import ParseAbAg
 from src.analyze_sasa import AnalyzeSasa
 from src.analyze_dist import AnalyzeDist
 
-def main(pdb_file, outputs_dir):
-    # get chains
-    p = ParseAbAg(pdb_file)
-    # get chains
+def main(args):
+    pdb_file = args['pdb_file']
+    p = ParseAbAg(args)
+
+    # update p.chains
     p.get_chains()
 
     # filter: is antibody-antigen complex
-    info = p.filter_antibody_antigen(outputs_dir)
+    # update self.info and self.bounded
+    info = p.parse_antibody_antigen()
     if not info:
         return None
-
     pprint(f'Try to detect complex from {pdb_file}: {info}')
+
     p.update_chains('chain_type')
     # split chains
     p.chains_to_pdb()
@@ -90,5 +92,6 @@ if __name__ == '__main__':
     with open(pdb_list_file, 'r') as f:
         for line in f:
             pdb_file = line.rstrip()
-            main(pdb_file, outdir)
+            args['outdir'] = outdir
+            main(args)
             n += 1

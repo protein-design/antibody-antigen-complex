@@ -1,0 +1,206 @@
+{
+  "event": "TASKS_CREATED",
+  "job_id": "1747490296",
+  "data": {
+    "tasks": [
+      {
+        "id": 3798,
+        "data": {
+          "pdb_id": "9KFB",
+          "compound": [
+            {
+              "molecule": "nm57-scfv light chain, nm57-scfv heavy chain",
+              "chain": "a, m, x"
+            },
+            {
+              "molecule": "rabv-g-ecto",
+              "chain": "b, k, f"
+            }
+          ]
+        },
+        "meta": {},
+        "created_at": "2025-05-17T13:58:16.552672Z",
+        "updated_at": "2025-05-17T13:58:16.552686Z",
+        "is_labeled": false,
+        "overlap": 1,
+        "inner_id": 3796,
+        "total_annotations": 0,
+        "cancelled_annotations": 0,
+        "total_predictions": 0,
+        "comment_count": 0,
+        "unresolved_comment_count": 0,
+        "last_comment_updated_at": null,
+        "project": 1,
+        "updated_by": null,
+        "file_upload": 12,
+        "comment_authors": []
+      },
+      {
+        "id": 3799,
+        "data": {
+          "pdb_id": "9DPE",
+          "compound": [
+            {
+              "molecule": "butyrophilin subfamily 2 member a1",
+              "chain": "a",
+              "other_details": "btn2a1 ectodomain with n- and c-terminal linkers. n-terminal (adlq) and c-terminal (vspcgsglevlfq) residues are disordered and not modeled. 3 glycans are denoted as nag. "
+            },
+            {
+              "molecule": "human igg1 fragment antibody heavy chain",
+              "chain": "h",
+              "other_details": "heavy chain of herceptin fab scaffold with cdr loops",
+              "modified through phage-display evolution. (cdr1": "fsssi) (cdr2",
+              "siysssgyty) (cdr3": "ieygrgywdaf). n-terminal (eis) is alinker/restriction enzyme artifact and first residue of fab, and disordered and not modeled. "
+            },
+            {
+              "molecule": "human igg1 fragment antibody light chain",
+              "chain": "l",
+              "other_details": "light chain of herceptin fab scaffold with cdr loops"
+            },
+            {
+              "molecule": "human variable heavy-chain domain nanobody",
+              "chain": "n",
+              "other_details": "human variable heavy-chain domain nanobody specificfor human fab kappa light chain with a hexahistidine tag and linker (hhhhhhgenlyfqgs). tag and linker are disordered and not shown. "
+            }
+          ]
+        },
+        "meta": {},
+        "created_at": "2025-05-17T13:58:16.552721Z",
+        "updated_at": "2025-05-17T13:58:16.552726Z",
+        "is_labeled": false,
+        "overlap": 1,
+        "inner_id": 3797,
+        "total_annotations": 0,
+        "cancelled_annotations": 0,
+        "total_predictions": 0,
+        "comment_count": 0,
+        "unresolved_comment_count": 0,
+        "last_comment_updated_at": null,
+        "project": 1,
+        "updated_by": null,
+        "file_upload": 12,
+        "comment_authors": []
+      },
+      {
+        "id": 3800,
+        "data": {
+          "pdb_id": "9KEP",
+          "compound": [
+            {
+              "molecule": "nm57-scfv light chain",
+              "chain": "a"
+            },
+            {
+              "molecule": "rabv-g-phd-fd",
+              "chain": "b"
+            },
+            {
+              "molecule": "nm57-scfv heavy chain",
+              "chain": "d"
+            }
+          ]
+        },
+        "meta": {},
+        "created_at": "2025-05-17T13:58:16.552750Z",
+        "updated_at": "2025-05-17T13:58:16.552754Z",
+        "is_labeled": false,
+        "overlap": 1,
+        "inner_id": 3798,
+        "total_annotations": 0,
+        "cancelled_annotations": 0,
+        "total_predictions": 0,
+        "comment_count": 0,
+        "unresolved_comment_count": 0,
+        "last_comment_updated_at": null,
+        "project": 1,
+        "updated_by": null,
+        "file_upload": 12,
+        "comment_authors": []
+      }
+    ],
+    "project": {
+      "id": 1,
+      "task_number": 3798,
+      "finished_task_number": 3,
+      "total_predictions_number": 6,
+      "total_annotations_number": 3,
+      "num_tasks_with_annotations": 3,
+      "useful_annotation_number": 3,
+      "ground_truth_number": 0,
+      "skipped_annotations_number": 0,
+      "title": "AbAg",
+      "description": "antibody-antigen complex",
+      "label_config": "<View>\n  <Header>Accept or reject predictions</Header>\n  <Text name=\"text\" value=\"$compound\"/>\n  <Choices name=\"chain\" toName=\"text\">\n    <Choice value=\"heavy\"/>\n    <Choice value=\"light\"/>\n  </Choices>\n</View>",
+      "parsed_label_config": {
+        "chain": {
+          "type": "Choices",
+          "to_name": [
+            "text"
+          ],
+          "inputs": [
+            {
+              "type": "Text",
+              "valueType": null,
+              "value": "compound"
+            }
+          ],
+          "labels": [
+            "heavy",
+            "light"
+          ],
+          "labels_attrs": {
+            "heavy": {
+              "value": "heavy"
+            },
+            "light": {
+              "value": "light"
+            }
+          }
+        }
+      },
+      "label_config_hash": -7241019460988194267,
+      "expert_instruction": "",
+      "show_instruction": false,
+      "show_skip_button": true,
+      "enable_empty_annotation": true,
+      "reveal_preannotations_interactively": false,
+      "show_annotation_history": false,
+      "show_collab_predictions": true,
+      "evaluate_predictions_automatically": false,
+      "token": "70FIJUp7Tp9gdGMSdKHWz90AIRwb0lB15C4babPc",
+      "result_count": 0,
+      "color": "#FFFFFF",
+      "maximum_annotations": 1,
+      "min_annotations_to_start_training": 0,
+      "control_weights": {
+        "chain": {
+          "overall": 1.0,
+          "type": "Choices",
+          "labels": {
+            "heavy": 1.0,
+            "light": 1.0
+          }
+        }
+      },
+      "model_version": "my_backend",
+      "data_types": {
+        "compound": "Text"
+      },
+      "is_draft": false,
+      "is_published": false,
+      "created_at": "2025-05-16T21:30:44.802015Z",
+      "updated_at": "2025-05-17T13:52:54.405406Z",
+      "sampling": "Sequential sampling",
+      "skip_queue": "REQUEUE_FOR_OTHERS",
+      "show_ground_truth_first": false,
+      "show_overlap_first": false,
+      "overlap_cohort_percentage": 100,
+      "task_data_login": null,
+      "task_data_password": null,
+      "pinned_at": null,
+      "custom_task_lock_ttl": null,
+      "organization": 1,
+      "created_by": 1
+    }
+  }
+}

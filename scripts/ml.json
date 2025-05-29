@@ -1,0 +1,11 @@
+[{
+    "data": {"text": "This product is amazing!"},
+    "predictions": [{
+      "result": [{
+        "from_name": "sentiment",
+        "to_name": "text",
+        "type": "choices",
+        "value": {"choices": ["Correct"]}
+      }]
+    }]
+}]

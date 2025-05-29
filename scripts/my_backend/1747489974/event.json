@@ -1,0 +1,90 @@
+{
+  "event": "PROJECT_UPDATED",
+  "job_id": "1747489974",
+  "data": {
+    "project": {
+      "id": 1,
+      "task_number": 1898,
+      "finished_task_number": 3,
+      "total_predictions_number": 6,
+      "total_annotations_number": 3,
+      "num_tasks_with_annotations": 3,
+      "useful_annotation_number": 3,
+      "ground_truth_number": 0,
+      "skipped_annotations_number": 0,
+      "title": "AbAg",
+      "description": "antibody-antigen complex",
+      "label_config": "<View>\n  <Header>Accept or reject predictions</Header>\n  <Text name=\"text\" value=\"$compound\"/>\n  <Choices name=\"chain\" toName=\"text\">\n    <Choice value=\"heavy\"/>\n    <Choice value=\"light\"/>\n  </Choices>\n</View>",
+      "parsed_label_config": {
+        "chain": {
+          "type": "Choices",
+          "to_name": [
+            "text"
+          ],
+          "inputs": [
+            {
+              "type": "Text",
+              "valueType": null,
+              "value": "compound"
+            }
+          ],
+          "labels": [
+            "heavy",
+            "light"
+          ],
+          "labels_attrs": {
+            "heavy": {
+              "value": "heavy"
+            },
+            "light": {
+              "value": "light"
+            }
+          }
+        }
+      },
+      "label_config_hash": -7241019460988194267,
+      "expert_instruction": "",
+      "show_instruction": false,
+      "show_skip_button": true,
+      "enable_empty_annotation": true,
+      "reveal_preannotations_interactively": false,
+      "show_annotation_history": false,
+      "show_collab_predictions": true,
+      "evaluate_predictions_automatically": false,
+      "token": "70FIJUp7Tp9gdGMSdKHWz90AIRwb0lB15C4babPc",
+      "result_count": 0,
+      "color": "#FFFFFF",
+      "maximum_annotations": 1,
+      "min_annotations_to_start_training": 0,
+      "control_weights": {
+        "chain": {
+          "overall": 1.0,
+          "type": "Choices",
+          "labels": {
+            "heavy": 1.0,
+            "light": 1.0
+          }
+        }
+      },
+      "model_version": "my_backend",
+      "data_types": {
+        "compound": "Text"
+      },
+      "is_draft": false,
+      "is_published": false,
+      "created_at": "2025-05-16T21:30:44.802015Z",
+      "updated_at": "2025-05-17T13:52:54.405406Z",
+      "sampling": "Sequential sampling",
+      "skip_queue": "REQUEUE_FOR_OTHERS",
+      "show_ground_truth_first": false,
+      "show_overlap_first": false,
+      "overlap_cohort_percentage": 100,
+      "task_data_login": null,
+      "task_data_password": null,
+      "pinned_at": null,
+      "custom_task_lock_ttl": null,
+      "organization": 1,
+      "created_by": 1
+    }
+  }
+}

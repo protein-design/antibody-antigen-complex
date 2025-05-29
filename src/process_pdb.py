@@ -30,21 +30,21 @@ class NonHetSelect(Select):
 
 class ProcessPdb:
 
-    def __init__(self, infile:str, outdir:str=None, verbose:bool=True):
+    def __init__(self, args:dict):
         # pdb_file
-        self.pdb_file = infile
-        self.indir = os.path.dirname(infile)
-        self.pdb_file_name = os.path.basename(infile)
-        self.verbose = verbose
+        self.pdb_file = args['pdb_file']
+        self.indir = os.path.dirname(self.pdb_file)
+        self.pdb_file_name = os.path.basename(self.pdb_file)
+        self.outdir = args.get('outdir')
+        self.verbose = args.get('verbose', True)
         # default objects should be updated
         self.annot = {}
         self.info = []
         self.chains = []
-        self.outdir = None
         # load structure
         self.get_parser()
         self.load_structure()
-        self.init_outdir(outdir)
+        self.init_outdir()
 
 
     def split_by_chain(self, chain_ids:list, file_name:str=None):
@@ -122,11 +122,11 @@ class ProcessPdb:
                 if self.verbose:
                     print(f"Successfully retrieve structure of {self.structure_id}")
 
-    def init_outdir(self, outdir=None):
-        if outdir:
+    def init_outdir(self):
+        if self.outdir:
             # update self.outdir
             prefix = self.structure_id[:2]
-            self.outdir = os.path.join(outdir, prefix, self.structure_id)
+            self.outdir = os.path.join(self.outdir, prefix, self.structure_id)
             Dir(self.outdir).init_dir()
             if self.verbose:
                 print('outputs dir: ', self.outdir)
@@ -150,6 +150,9 @@ class ProcessPdb:
                     yield model, chain, res
 
     def get_chains(self):
+        '''
+        update self.chains
+        '''
         for model in self.structure:
             _chains = {
                 'model_id': model.id,
